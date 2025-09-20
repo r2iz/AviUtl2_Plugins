@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AviUtl Hub - プラグイン＆スクリプト検索</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="background-gradient"></div>
+
+    <div class="min-h-screen flex flex-col">
+        <header id="header" class="w-full glassmorphism">
+            <div class="container mx-auto px-4">
+                <nav class="flex items-center justify-between h-16">
+                    <div class="text-2xl font-bold tracking-wider">
+                        <a href="#" class="nav-link" data-page="plugins">AviUtl Hub</a>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                        <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="plugins">プラグイン</a>
+                        <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="scripts">スクリプト</a>
+                        <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="install">導入方法</a>
+                        <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="info">情報提供</a>
+                    </div>
+                    </nav>
+            </div>
+        </header>
+
+        <main id="app" class="flex-grow container mx-auto px-4 py-8">
+            </main>
+
+        <footer class="w-full py-6">
+            <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
+                <p>&copy; 2025 AviUtl Hub. All Rights Reserved.</p>
+                <p class="mt-1">This site is not affiliated with the official AviUtl developers.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>
