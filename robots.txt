@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lineside0418.github.io/AviUtl2_Plugins/sitemap.xml
