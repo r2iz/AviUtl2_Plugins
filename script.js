@@ -188,6 +188,45 @@ const App = {
         }
     },
 
+    // モーダル操作
+    showModal() {
+        const modal = document.getElementById('custom-modal');
+        if (modal) {
+            // hiddenを外し、flexで表示
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // アニメーションのために少し遅延させる
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                // モーダルコンテンツにアクセスするためにクエリセレクタでglassmorphismクラスを持つ要素を探す
+                const modalContent = modal.querySelector('.glassmorphism');
+                if (modalContent) {
+                    modalContent.classList.remove('scale-95');
+                }
+            }, 10);
+        }
+    },
+
+    hideModal() {
+        const modal = document.getElementById('custom-modal');
+        if (modal) {
+            // アニメーションを先に実行
+            modal.classList.add('opacity-0');
+            // モーダルコンテンツにアクセスするためにクエリセレクタでglassmorphismクラスを持つ要素を探す
+            const modalContent = modal.querySelector('.glassmorphism');
+            if (modalContent) {
+                modalContent.classList.add('scale-95');
+            }
+            
+            // アニメーションが終わってからhiddenを追加
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300); // CSSのtransition-durationに合わせて300ms
+        }
+    },
+
     // レンダリング
     render() {
         if (this.state.isLoading) {
@@ -228,6 +267,9 @@ const App = {
         // ページ遷移後にアイテムリストだけを再描画する
         if (this.state.currentPage === 'plugins' || this.state.currentPage === 'scripts') {
             this.renderItems();
+            this.updateTagStyles();
+            this.updateViewModeButtons();
+            this.updateTagModeButtons();
         }
     },
 
@@ -314,19 +356,69 @@ const App = {
                 this.updateTagModeButtons();
                 this.renderItems();
             }
+
+            // 詳細ボタンの処理
+            const detailBtn = e.target.closest('.detail-link');
+            if (detailBtn) {
+                e.preventDefault();
+                const url = detailBtn.dataset.url;
+                if (url && url !== '#' && url !== '') {
+                    // URLがある場合は新しいタブで開く
+                    window.open(url, '_blank');
+                } else {
+                    // URLがない場合はカスタムモーダルを表示
+                    this.showModal();
+                }
+            }
+            
+            // ダウンロードボタンの処理
+            const downloadBtn = e.target.closest('.download-link');
+            if (downloadBtn) {
+                e.preventDefault();
+                const url = downloadBtn.dataset.url;
+                if (url && url !== '#' && url !== '') {
+                    // URLがある場合は新しいタブで開く
+                    window.open(url, '_blank');
+                } else {
+                    // URLがない場合はカスタムモーダルを表示 (ダウンロード情報なし)
+                    this.showModal();
+                }
+            }
         });
+        
+        // モーダルを閉じるボタン
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', () => this.hideModal());
+        }
+        
+        // モーダルの背景クリックで閉じる
+        const customModal = document.getElementById('custom-modal');
+        if (customModal) {
+             customModal.addEventListener('click', (e) => {
+                // モーダル内のコンテンツ自体ではないことを確認
+                if (e.target === customModal) {
+                    this.hideModal();
+                }
+            });
+        }
     },
 
     updateTagStyles() {
         document.querySelectorAll('.tag-filter').forEach(tagEl => {
             const tag = tagEl.dataset.tag;
-            tagEl.classList.toggle('bg-blue-500', this.state.filters.tags.has(tag));
-            tagEl.classList.toggle('border-blue-500', this.state.filters.tags.has(tag));
+            // 選択時: 白い文字、濃いグレーの背景、白い枠線
+            tagEl.classList.toggle('bg-white/20', this.state.filters.tags.has(tag));
+            tagEl.classList.toggle('border-white/40', this.state.filters.tags.has(tag));
             tagEl.classList.toggle('text-white', this.state.filters.tags.has(tag));
-            tagEl.classList.toggle('bg-white/10', !this.state.filters.tags.has(tag));
+            
+            // 未選択時: 薄いグレーの背景、薄い枠線
+            tagEl.classList.toggle('bg-white/05', !this.state.filters.tags.has(tag));
             tagEl.classList.toggle('border-white/10', !this.state.filters.tags.has(tag));
-            tagEl.classList.toggle('hover:bg-white/20', !this.state.filters.tags.has(tag));
             tagEl.classList.toggle('text-gray-300', !this.state.filters.tags.has(tag));
+            
+            // ホバー
+            tagEl.classList.add('hover:bg-white/20');
         });
     },
 
@@ -334,13 +426,19 @@ const App = {
         const gridBtn = document.getElementById('view-grid');
         const listBtn = document.getElementById('view-list');
         if (gridBtn && listBtn) {
-            gridBtn.classList.toggle('bg-blue-600/50', this.state.viewMode === 'grid');
+            // 選択時: 濃いグレーの背景、白い文字
+            gridBtn.classList.toggle('bg-white/20', this.state.viewMode === 'grid');
             gridBtn.classList.toggle('text-white', this.state.viewMode === 'grid');
+            
+            // 未選択時: 薄いグレーの背景、薄い文字
             gridBtn.classList.toggle('bg-black/30', this.state.viewMode !== 'grid');
             gridBtn.classList.toggle('text-gray-400', this.state.viewMode !== 'grid');
             
-            listBtn.classList.toggle('bg-blue-600/50', this.state.viewMode === 'list');
+            // 選択時: 濃いグレーの背景、白い文字
+            listBtn.classList.toggle('bg-white/20', this.state.viewMode === 'list');
             listBtn.classList.toggle('text-white', this.state.viewMode === 'list');
+            
+            // 未選択時: 薄いグレーの背景、薄い文字
             listBtn.classList.toggle('bg-black/30', this.state.viewMode !== 'list');
             listBtn.classList.toggle('text-gray-400', this.state.viewMode !== 'list');
         }
@@ -350,14 +448,20 @@ const App = {
         const orBtn = document.getElementById('tag-mode-or');
         const andBtn = document.getElementById('tag-mode-and');
         if (orBtn && andBtn) {
-            orBtn.classList.toggle('bg-blue-600/50', this.state.tagMode === 'or');
-            orBtn.classList.toggle('bg-black/30', this.state.tagMode !== 'or');
+            // 選択時: 濃いグレーの背景、白い文字
+            orBtn.classList.toggle('bg-white/20', this.state.tagMode === 'or');
             orBtn.classList.toggle('text-white', this.state.tagMode === 'or');
+            
+            // 未選択時: 薄いグレーの背景、薄い文字
+            orBtn.classList.toggle('bg-black/30', this.state.tagMode !== 'or');
             orBtn.classList.toggle('text-gray-400', this.state.tagMode !== 'or');
             
-            andBtn.classList.toggle('bg-blue-600/50', this.state.tagMode === 'and');
-            andBtn.classList.toggle('bg-black/30', this.state.tagMode !== 'and');
+            // 選択時: 濃いグレーの背景、白い文字
+            andBtn.classList.toggle('bg-white/20', this.state.tagMode === 'and');
             andBtn.classList.toggle('text-white', this.state.tagMode === 'and');
+            
+            // 未選択時: 薄いグレーの背景、薄い文字
+            andBtn.classList.toggle('bg-black/30', this.state.tagMode !== 'and');
             andBtn.classList.toggle('text-gray-400', this.state.tagMode !== 'and');
         }
     },
@@ -387,88 +491,103 @@ const App = {
                     <div class="w-full md:w-3/4">
                         <div class="glassmorphism p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-24 z-10">
                             <div class="relative w-full sm:w-auto flex-grow">
-                                <input id="search-input" type="text" placeholder="検索..." value="${App.state.filters.search}" class="w-full bg-black/30 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                <input id="search-input" type="text" placeholder="検索..." value="${App.state.filters.search}" class="w-full bg-black/30 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all text-white">
                                 <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button id="view-grid" class="${App.state.viewMode === 'grid' ? 'bg-blue-600/50 text-white' : 'bg-black/30 text-gray-400'} p-2 rounded-lg transition-colors hover:bg-blue-600/40"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
-                                <button id="view-list" class="${App.state.viewMode === 'list' ? 'bg-blue-600/50 text-white' : 'bg-black/30 text-gray-400'} p-2 rounded-lg transition-colors hover:bg-blue-600/40"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></button>
-                            </div>
-                        </div>
-                        
-                        <div id="items-list" class="${App.state.viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'flex flex-col gap-4'}">
-                            ${/* itemsはrenderItems()で動的に追加 */ ''}
-                        </div>
-                    </div>
-                    <aside class="w-full md:w-1/4">
-                        <div class="glassmorphism p-5 sticky top-24">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-bold text-lg text-white">タグ一覧</h3>
-                                <div>
-                                    <button id="tag-mode-or" class="text-xs font-medium px-2 py-1 rounded ${App.state.tagMode === 'or' ? 'bg-blue-600/50 text-white' : 'bg-black/30 text-gray-400'}">OR</button>
-                                    <button id="tag-mode-and" class="text-xs font-medium px-2 py-1 rounded ${App.state.tagMode === 'and' ? 'bg-blue-600/50 text-white' : 'bg-black/30 text-gray-400'}">AND</button>
-                                </div>
-                                <button id="reload-button" title="データを再読み込み" class="text-gray-400 hover:text-white transition-transform duration-300 hover:rotate-180">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+                                <button id="view-grid" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <button id="view-list" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zM5 8a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm0 3a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
                                 </button>
                             </div>
-                            <div class="flex flex-wrap gap-2">
-                                ${[...currentTags].sort().map(tag => `
-                                    <button class="tag-filter text-xs font-medium px-3 py-1 rounded-full transition-all duration-200 border
-                                        ${App.state.filters.tags.has(tag)
-                                            ? 'bg-blue-500 border-blue-500 text-white'
-                                            : 'bg-white/10 border-white/10 hover:bg-white/20 text-gray-300'}"
-                                        data-tag="${tag}">
-                                        ${tag}
-                                    </button>
-                                `).join('')}
+                            </div>
+                        <div id="items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            </div>
+                        
+                        <div class="mt-8 text-center">
+                            <button id="reload-button" class="bg-white/10 text-gray-300 font-semibold py-2 px-6 rounded-lg border border-white/10 hover:bg-white/20 transition-colors flex items-center mx-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                                データを再読み込み
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="w-full md:w-1/4">
+                        <div class="glassmorphism p-4 sticky top-[100px]">
+                            <div class="flex justify-between items-center mb-3 border-b border-white/20 pb-2">
+                                <h3 class="text-lg font-semibold text-white">タグフィルタ</h3>
+                                
+                                <div class="flex items-center gap-1 text-sm rounded-lg bg-black/30 p-1 border border-white/10">
+                                    <button id="tag-mode-or" class="py-1 px-3 rounded-md transition-colors hover:bg-white/10">OR</button>
+                                    <button id="tag-mode-and" class="py-1 px-3 rounded-md transition-colors hover:bg-white/10">AND</button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2" id="tag-filters">
+                                ${[...currentTags].sort().map(tag => `<button data-tag="${tag}" class="tag-filter text-xs py-1 px-3 rounded-full border bg-white/05 border-white/10 text-gray-300 hover:bg-white/20 transition-colors">${tag}</button>`).join('')}
                             </div>
                         </div>
-                    </aside>
+                    </div>
                 </div>
             `;
         },
+        // itemCardからアイコンと詳細情報なしのロジックを削除
         itemCard(item, viewMode) {
-            const itemTags = item.tags ? item.tags.split(',').map(tag => tag.trim()) : [];
-            const tagsHtml = itemTags.map(tag => `<span class="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded">${tag}</span>`).join('') || '';
+            const tagsHtml = (item.tags ? item.tags.split(',').map(tag => tag.trim()) : [])
+                .map(tag => `<span class="text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300">${tag}</span>`)
+                .join('');
 
-            if (viewMode === 'grid') {
+            // ★ 修正点: item.detailURL から item.rel_link に変更
+            const detailUrl = item.rel_link || '#'; 
+            const downloadUrl = item.downloadURL || '#'; // ダウンロードリンクは変更なし
+
+            if (viewMode === 'list') {
                 return `
-                <div class="item-card glassmorphism h-full">
-                    <div class="content p-6 flex flex-col h-full">
-                        <h3 class="text-lg font-bold text-white mb-2">${item.name}</h3>
-                        <p class="text-sm text-gray-300 flex-grow mb-4">${item.description}</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            ${tagsHtml}
-                        </div>
-                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary mt-auto w-full text-center text-white font-semibold py-2 px-4 rounded-lg">
-                            ダウンロード
-                        </a>
-                    </div>
-                </div>
-                `;
-            } else { // list view
-                return `
-                <div class="item-card glassmorphism">
-                    <div class="content p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="glassmorphism p-4 flex items-start space-x-4 hover:border-gray-500/50 transition-all border border-transparent">
                         <div class="flex-grow">
-                            <h3 class="text-lg font-bold text-white">${item.name}</h3>
-                            <p class="text-sm text-gray-300 mt-1">${item.description}</p>
-                            <div class="flex flex-wrap gap-2 mt-3">
+                            <h3 class="text-lg font-bold text-white mb-1">${item.name}</h3>
+                            <p class="text-sm text-gray-300 line-clamp-2">${item.description || '説明がありません。'}</p>
+                            <div class="flex flex-wrap gap-2 mt-2">
                                 ${tagsHtml}
                             </div>
                         </div>
-                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-full sm:w-auto text-center text-white font-semibold py-2 px-4 rounded-lg flex-shrink-0">
-                            ダウンロード
-                        </a>
+                        <div class="flex-shrink-0 self-center flex space-x-2">
+                            <a href="${detailUrl}" data-url="${detailUrl}" class="detail-link bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
+                                詳細
+                            </a>
+                            <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
+                                Download </a>
+                        </div>
                     </div>
-                </div>
                 `;
             }
+
+            // Grid View
+            return `
+                <div class="glassmorphism p-6 flex flex-col hover:border-gray-500/50 transition-all border border-transparent">
+                    <h3 class="text-xl font-bold text-white leading-tight mb-2">${item.name}</h3>
+                    <p class="text-gray-300 mb-4 flex-grow line-clamp-3">${item.description || '説明がありません。'}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${tagsHtml}
+                    </div>
+                    <div class="flex space-x-2 mt-auto">
+                        <a href="${detailUrl}" data-url="${detailUrl}" class="detail-link flex-1 text-center bg-white/10 hover:bg-white/20 text-white font-semibold py-2 rounded-lg transition-colors border border-white/20">
+                            詳細
+                        </a>
+                        <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link flex-1 text-center bg-white hover:bg-gray-200 text-black font-semibold py-2 rounded-lg transition-colors border border-white/20">
+                            Download </a>
+                    </div>
+                </div>
+            `;
         },
         installPage() {
+            // marked.parseはscript.jsのinitで定義されている想定
             return `
-                ${App.templates.hero('導入方法', 'プラグインとスクリプトの基本的な導入手順')}
+                ${App.templates.hero('導入方法', 'プラグインとスクリプトの基本的な導入手順')}\
                 <div class="glassmorphism p-6 sm:p-10 max-w-4xl mx-auto">
                     <div class="markdown-body">
                         ${marked.parse(App.howToInstallMarkdown)}
@@ -484,7 +603,7 @@ const App = {
                         <p class="text-lg mb-6">
                             このサイトに掲載されていないプラグインやスクリプト、または情報に誤りがある場合など、お気軽に下記のフォームから情報をお寄せください。
                         </p>
-                        <a href="${App.config.googleFormURL}" target="_blank" rel="noopener noreferrer" class="btn btn-primary inline-block text-white font-bold py-3 px-8 rounded-lg text-lg">
+                        <a href="${App.config.googleFormURL || 'https://forms.gle/XXXXXXXXXXXXXXXX'}" target="_blank" rel="noopener noreferrer" class="btn btn-primary inline-block text-white font-bold py-3 px-8 rounded-lg text-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/20">
                             情報提供フォームへ
                         </a>
                     </div>
@@ -495,7 +614,7 @@ const App = {
             return `
                 <div class="text-center py-20">
                     <h2 class="text-2xl font-bold text-red-400">エラーが発生しました</h2>
-                    <p class="mt-4 text-gray-300 font-mono bg-black/30 p-4 rounded-lg inline-block">${message}</p>
+                    <p class="mt-4 text-gray-300 font-mono bg-black/30 p-4 rounded-lg inline-block">詳細: ${message}</p>
                 </div>
             `;
         }
