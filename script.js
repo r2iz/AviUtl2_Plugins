@@ -541,9 +541,10 @@ const App = {
                 .map(tag => `<span class="text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300">${tag}</span>`)
                 .join('');
 
-            // ★ 修正点: item.detailURL から item.rel_link に変更
+            // 詳細リンクは item.rel_link
             const detailUrl = item.rel_link || '#'; 
-            const downloadUrl = item.downloadURL || '#'; // ダウンロードリンクは変更なし
+            // ★ ダウンロードリンクは item.url に修正
+            const downloadUrl = item.url || '#'; 
 
             if (viewMode === 'list') {
                 return `
@@ -559,8 +560,9 @@ const App = {
                             <a href="${detailUrl}" data-url="${detailUrl}" class="detail-link bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
                                 詳細
                             </a>
-                            <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
-                                Download </a>
+                            <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link flex-1 text-center bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
+                                Download 
+                            </a>
                         </div>
                     </div>
                 `;
@@ -579,7 +581,8 @@ const App = {
                             詳細
                         </a>
                         <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link flex-1 text-center bg-white hover:bg-gray-200 text-black font-semibold py-2 rounded-lg transition-colors border border-white/20">
-                            Download </a>
+                            Download 
+                        </a>
                     </div>
                 </div>
             `;
