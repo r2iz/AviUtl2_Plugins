@@ -36,13 +36,19 @@
             <div class="container mx-auto px-4">
                 <nav class="flex items-center justify-between h-16">
                     <div class="text-2xl font-bold tracking-wider">
-                        <a href="#" class="nav-link" data-page="plugins">AviUtl2 Hub</a>
+                        <a href="#" class="nav-link" data-page="plugins"  data-i18n="nav.logo">AviUtl2 Hub</a>
                     </div>
                     <div class="hidden md:flex items-center space-x-6 text-sm font-medium">
                         <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="plugins">プラグイン</a>
                         <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="scripts">スクリプト</a>
                         <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="install">導入方法</a>
                         <a href="#" class="nav-link text-gray-300 hover:text-white transition-colors" data-page="info">情報提供</a>
+                    </div>
+                    <div class="flex items-center ml-4">
+                        <div id="lang-toggle-btn-group" class="flex text-sm rounded-lg bg-white/10 p-1 border border-white/20">
+                            <button data-lang="ja" class="lang-btn py-1 px-3 rounded-md transition-colors font-medium">JA</button>
+                            <button data-lang="en" class="lang-btn py-1 px-3 rounded-md transition-colors font-medium">EN</button>
+                        </div>
                     </div>
                     </nav>
             </div>
