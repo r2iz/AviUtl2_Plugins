@@ -24,10 +24,10 @@ const App = {
         en: {
             nav: {
                 logo: 'AviUtl2 Hub', // ★ 追加
-                plugins: 'Plugins',
-                scripts: 'Scripts',
-                install: 'How to Install',
-                info: 'Submit Info',
+                plugins: 'Plugins', // ★ 追加
+                scripts: 'Scripts', // ★ 追加
+                install: 'How to Install', // ★ 追加
+                info: 'Submit Info', // ★ 追加
             },
             hero: {
                 plugins_title: 'Plugins',
@@ -47,14 +47,15 @@ const App = {
                 no_items: 'No items found.',
                 reload: 'Reload Data',
                 no_info_title: 'No Information Available',
-                no_info_text: 'No detailed information provided. Please check the author\'s site separately.',
+                no_info_text: 'No detailed information provided.\nPlease check the author\'s site separately.', // ★ 改行コードを含む
                 close: 'Close',
                 tag_filter: 'Tag Filter',
                 error_title: 'An Error Occurred',
                 error_prefix: 'Detail: ',
             },
             footer: {
-                description: 'This is an unofficial hub created by me to collect AviUtl2 information. For bugs or info, contact me on social media!',
+                description: 'This is an unofficial hub created by me to collect AviUtl2 information. For bugs or info, contact me on social media!', // ★ 以前の長い説明文
+                short_description: 'This is an unofficial site that compiles AviUtl2 scripts and plugins.\nIt is updated irregularly.', // ★ 新しい短い説明文
                 copyright: '&copy; 2025 AviUtl2 Hub. All Rights Reserved.',
                 affiliation: 'This site is not affiliated with the official AviUtl developers.',
                 mobile_warning: 'This site is optimized for PC viewing. You can proceed, but are you sure you want to enter?',
@@ -65,10 +66,10 @@ const App = {
         ja: {
             nav: {
                 logo: 'AviUtl2 Hub', // ★ 追加
-                plugins: 'プラグイン',
-                scripts: 'スクリプト',
-                install: '導入方法',
-                info: '情報提供',
+                plugins: 'プラグイン', // ★ 追加
+                scripts: 'スクリプト', // ★ 追加
+                install: '導入方法', // ★ 追加
+                info: '情報提供', // ★ 追加
             },
             hero: {
                 plugins_title: 'プラグイン',
@@ -88,14 +89,15 @@ const App = {
                 no_items: 'アイテムが見つかりませんでした。',
                 reload: 'データを再読み込み',
                 no_info_title: '情報がありません',
-                no_info_text: '詳細情報が提供されていません。\n作者のサイトなどを別途ご確認ください。',
+                no_info_text: '詳細情報が提供されていません。\n作者のサイトなどを別途ご確認ください。', // ★ 改行コードを含む
                 close: '閉じる',
                 tag_filter: 'タグフィルタ',
                 error_title: 'エラーが発生しました',
                 error_prefix: '詳細: ',
             },
             footer: {
-                description: 'このサイトは、俺がAviUtl2の情報を集めるために作った非公式ハブだよ。不具合や情報提供はSNSまで！',
+                description: 'このサイトは、俺がAviUtl2の情報を集めるために作った非公式ハブだよ。不具合や情報提供はSNSまで！', // ★ 以前の長い説明文
+                short_description: 'AviUtl2のスクリプトとプラグインをまとめた非公式サイトです。\n不定期に更新しています。', // ★ 新しい短い説明文
                 copyright: '&copy; 2025 AviUtl2 Hub. All Rights Reserved.',
                 affiliation: 'This site is not affiliated with the official AviUtl developers.',
                 mobile_warning: 'このサイトはPCでの表示に最適化されています。表示はできますが、本当に入りますか？',
@@ -473,12 +475,19 @@ const App = {
         const lang = this.state.currentLang;
         const dict = this.i18n[lang];
 
-        // 1. data-i18n属性を持つ要素を更新 (ナビゲーションリンクなど)
+        // 1. data-i18n属性を持つ要素を更新 (ナビゲーションリンク、フッター、モーダルボタンなど)
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n; // 例: 'nav.plugins'
             const [section, subkey] = key.split('.');
             if (dict[section] && dict[section][subkey]) {
-                el.textContent = dict[section][subkey];
+                
+                // ★ common.no_info_text, footer.description, footer.short_description, common.no_info_title は改行処理が必要な場合があるのでinnerHTMLを使用
+                if (key === 'common.no_info_text' || key === 'footer.description' || key === 'footer.short_description' || key === 'common.no_info_title') {
+                    // 改行コード \n を <br> に変換して適用
+                    el.innerHTML = dict[section][subkey].replace(/\n/g, '<br>');
+                } else {
+                    el.textContent = dict[section][subkey];
+                }
             }
         });
 
@@ -488,16 +497,10 @@ const App = {
             searchInput.placeholder = dict.common.search;
         }
         
-        // 3. モーダル内のテキストを更新
-        const modalTitle = document.querySelector('#custom-modal h3');
-        const modalTextEl = document.querySelector('#custom-modal p:not(.text-gray-300)');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
+        // 3. モーダル内のタイトルを更新 (data-i18nで処理されるため、手動処理は削除)
+        // const modalTitle = document.querySelector('#custom-modal h3');
+        // if (modalTitle) modalTitle.textContent = dict.common.no_info_title;
 
-        if (modalTitle) modalTitle.textContent = dict.common.no_info_title;
-        // モーダルテキストは改行コードを<br>に変換
-        if (modalTextEl) modalTextEl.innerHTML = dict.common.no_info_text.replace('\n', '<br>'); 
-        if (modalCloseBtn) modalCloseBtn.textContent = dict.common.close;
-        
         // 4. ページのメインコンテンツが翻訳を反映するために再描画が必要な場合、ここで行う
         if (this.state.currentPage === 'plugins' || this.state.currentPage === 'scripts') {
             // ★ タグフィルタリストを再描画するためにrenderItemsを呼び出す
@@ -507,7 +510,7 @@ const App = {
              // infoPageの動的コンテンツを更新
             const infoTextEl = document.querySelector('.info-page-text');
             const infoBtnEl = document.querySelector('.info-page-button');
-            if (infoTextEl) infoTextEl.textContent = dict.footer.info_form_text;
+            // infoPageのp要素はtemplateでinnerHTMLが設定済みのため、ここでは不要
             if (infoBtnEl) infoBtnEl.textContent = dict.footer.info_form_button;
         }
 
