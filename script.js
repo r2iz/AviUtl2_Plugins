@@ -17,6 +17,8 @@ const App = {
         viewMode: 'grid', // 'grid' or 'list'
         tagMode: 'or', // 新しいタグ選択モード: 'or' or 'and'
         currentLang: 'ja', // 初期値はinit()で上書きされるので、一旦'ja'で残す
+        // ★ 新機能: 選択されたアイテムのIDを格納するセット
+        selectedItems: new Set(), 
     },
     
     // ★ 翻訳データ
@@ -52,6 +54,11 @@ const App = {
                 tag_filter: 'Tag Filter',
                 error_title: 'An Error Occurred',
                 error_prefix: 'Detail: ',
+                // ★ 新しい翻訳キー
+                batch_download: 'Download Selected ({count})', 
+                batch_detail: 'Details Selected ({count})',
+                select_all: 'Select All',
+                deselect_all: 'Deselect All',
             },
             footer: {
                 description: 'This is an unofficial hub created by me to collect AviUtl2 information. For bugs or info, contact me on social media!',
@@ -92,6 +99,11 @@ const App = {
                 tag_filter: 'タグフィルタ',
                 error_title: 'エラーが発生しました',
                 error_prefix: '詳細: ',
+                // ★ 新しい翻訳キー
+                batch_download: '選択アイテムをダウンロード ({count})',
+                batch_detail: '選択アイテムの詳細を開く ({count})',
+                select_all: 'すべて選択',
+                deselect_all: '選択解除',
             },
             footer: {
                 description: 'このサイトは、俺がAviUtl2の情報を集めるために作った非公式ハブだよ。不具合や情報提供はSNSまで！',
@@ -195,7 +207,24 @@ const App = {
             const page = this.getCurrentPageFromURL();
             this.navigate(page, false);
         });
-        this.addEventListeners(); // イベントリスナーは一度だけ追加
+        
+        // モーダル関連のイベントリスナーはinit()で追加する
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', () => this.hideModal());
+        }
+        
+        const customModal = document.getElementById('custom-modal');
+        if (customModal) {
+             customModal.addEventListener('click', (e) => {
+                // モーダル内のコンテンツ自体ではないことを確認
+                if (e.target === customModal) {
+                    this.hideModal();
+                }
+            });
+        }
+        
+        this.addEventListeners(); // その他のイベントリスナーは一度だけ追加
     },
 
     async fetchConfig() {
@@ -251,6 +280,9 @@ const App = {
                 history.pushState({ page }, '', `#${page}`);
             }
             
+            // ★ 新機能: ページ遷移時に選択状態をリセット
+            this.state.selectedItems.clear(); 
+            
             // 新しいページを描画
             this.render();
             
@@ -302,6 +334,7 @@ const App = {
             const pluginsData = await pluginsRes.json();
             const scriptsData = await scriptsRes.json();
             
+            // microCMSのレスポンスにはidが含まれていることを前提とする
             this.state.plugins = pluginsData.contents;
             this.state.scripts = scriptsData.contents;
             
@@ -327,7 +360,7 @@ const App = {
         if (this.state.currentLang === newLang) return; 
 
         // 1. ローカルストレージに保存
-        localStorage.setItem('appLang', newLang); // ★ 追加
+        localStorage.setItem('appLang', newLang); 
 
         // 2. ローディング画面を表示
         this.state.isLoading = true;
@@ -338,6 +371,9 @@ const App = {
         const appElement = this.elements.app;
         appElement.style.transition = 'opacity 0.3s ease-out';
         appElement.style.opacity = '0';
+        
+        // ★ 新機能: 言語切り替え時に選択状態をリセット
+        this.state.selectedItems.clear(); 
 
         // 4. アニメーションが終わるのを待ってから言語を切り替え、再描画
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -470,6 +506,8 @@ const App = {
             this.updateTagStyles();
             this.updateViewModeButtons();
             this.updateTagModeButtons();
+            // ★ 新機能: 一括操作ボタンの状態を更新
+            this.updateBatchActionButtons(); 
         }
         
         // ページ切り替え時に翻訳を実行 (ローディング後のフェードイン前に実行される)
@@ -508,6 +546,7 @@ const App = {
             // タグフィルタリストを再描画するためにrenderItemsを呼び出す
             this.renderItems(); 
             this.updateTagStyles(); // スタイルも再適用
+            this.updateBatchActionButtons(); // ★ 新機能: 翻訳に合わせて一括操作ボタンを更新
         } else if (this.state.currentPage === 'info') {
              // infoPageの動的コンテンツを更新
             const infoBtnEl = document.querySelector('.info-page-button');
@@ -573,6 +612,38 @@ const App = {
             this.updateTagStyles(); // スタイルを再適用
         }
     },
+    
+    // ★ 新機能: 一括操作ボタンの状態を更新
+    updateBatchActionButtons() {
+        const batchActionsEl = document.getElementById('batch-actions');
+        const selectAllBtn = document.getElementById('select-all-btn');
+        const deselectAllBtn = document.getElementById('deselect-all-btn');
+
+        if (!batchActionsEl) return;
+
+        const selectedCount = this.state.selectedItems.size;
+        const dict = this.i18n[this.state.currentLang];
+        
+        // 選択されたアイテムが1つ以上ある場合のみ表示
+        if (selectedCount > 0) {
+            batchActionsEl.classList.remove('hidden');
+
+            const downloadButton = document.getElementById('batch-download-btn');
+            const detailButton = document.getElementById('batch-detail-btn');
+            
+            // 翻訳を反映
+            if (downloadButton) downloadButton.textContent = dict.common.batch_download.replace('{count}', selectedCount);
+            if (detailButton) detailButton.textContent = dict.common.batch_detail.replace('{count}', selectedCount);
+            
+            // すべて選択/選択解除ボタンのラベルも更新
+            if (deselectAllBtn) deselectAllBtn.textContent = dict.common.deselect_all;
+        } else {
+            batchActionsEl.classList.add('hidden');
+        }
+        
+        // すべて選択ボタンのラベル更新
+        if (selectAllBtn) selectAllBtn.textContent = dict.common.select_all;
+    },
 
     // イベントリスナーの追加
     addEventListeners() {
@@ -580,6 +651,17 @@ const App = {
             if (e.target.id === 'search-input') {
                 this.state.filters.search = e.target.value;
                 this.renderItems();
+            }
+            // ★ 新機能: チェックボックスの入力（非表示のチェックボックスが直接操作された場合）
+            if (e.target.classList.contains('item-checkbox')) {
+                const itemId = e.target.value;
+                if (e.target.checked) {
+                    this.state.selectedItems.add(itemId);
+                } else {
+                    this.state.selectedItems.delete(itemId);
+                }
+                this.renderItems(); // ★ 見た目の更新のために再描画
+                this.updateBatchActionButtons(); // 選択数の更新
             }
         });
 
@@ -595,6 +677,30 @@ const App = {
                 // タグの選択状態が変更されたら、スタイルとアイテムリストを更新
                 this.updateTagStyles();
                 this.renderItems();
+            }
+            
+            // ★ 修正点: カード全体のクリック処理（ボタン以外）
+            const cardEl = e.target.closest('.item-card');
+            if (cardEl) {
+                // ダウンロード/詳細リンクがクリックされた場合は処理をスキップ
+                if (e.target.closest('.detail-link') || e.target.closest('.download-link')) {
+                    // 何もしない (リンク本来の動作を優先)
+                } else {
+                    // カードIDを取得
+                    const itemId = cardEl.dataset.id;
+                    if (itemId) {
+                        const isSelected = this.state.selectedItems.has(itemId);
+                        if (isSelected) {
+                            this.state.selectedItems.delete(itemId);
+                        } else {
+                            this.state.selectedItems.add(itemId);
+                        }
+                        
+                        // 状態変更後に再描画
+                        this.renderItems();
+                        this.updateBatchActionButtons();
+                    }
+                }
             }
             
             const viewGridBtn = e.target.closest('#view-grid');
@@ -657,24 +763,91 @@ const App = {
                     this.showModal();
                 }
             }
+            
+            // ★ 新機能: 一括ダウンロードボタン
+            const batchDownloadBtn = e.target.closest('#batch-download-btn');
+            if (batchDownloadBtn) {
+                App.batchOpenLinks('download');
+            }
+            
+            // ★ 新機能: 一括詳細ボタン
+            const batchDetailBtn = e.target.closest('#batch-detail-btn');
+            if (batchDetailBtn) {
+                App.batchOpenLinks('detail');
+            }
+            
+            // ★ 新機能: すべて選択/選択解除ボタン
+            const selectAllBtn = e.target.closest('#select-all-btn');
+            if (selectAllBtn) {
+                App.toggleSelectAll(true);
+            }
+            
+            const deselectAllBtn = e.target.closest('#deselect-all-btn');
+            if (deselectAllBtn) {
+                App.toggleSelectAll(false);
+            }
         });
+    },
+    
+    // ★ 新機能: 一括リンクオープン処理
+    batchOpenLinks(type) {
+        const itemIds = Array.from(this.state.selectedItems);
+        const allItems = [...this.state.plugins, ...this.state.scripts];
         
-        // モーダルを閉じるボタン
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', () => this.hideModal());
-        }
-        
-        // モーダルの背景クリックで閉じる
-        const customModal = document.getElementById('custom-modal');
-        if (customModal) {
-             customModal.addEventListener('click', (e) => {
-                // モーダル内のコンテンツ自体ではないことを確認
-                if (e.target === customModal) {
-                    this.hideModal();
+        let validLinkCount = 0;
+
+        itemIds.forEach(id => {
+            // microCMSのIDはstringなので、== で比較
+            const item = allItems.find(i => i.id == id);
+            if (item) {
+                let url;
+                if (type === 'download') {
+                    url = item.url;
+                } else if (type === 'detail') {
+                    url = item.rel_link;
                 }
-            });
+                
+                if (url && url !== '#' && url !== '') {
+                    window.open(url, '_blank');
+                    validLinkCount++;
+                }
+            }
+        });
+
+        // リンクがないアイテムが選択されていた場合や、すべて開けた場合に通知
+        if (validLinkCount === 0 && itemIds.length > 0) {
+            // すべてリンクがない場合はモーダルを表示
+            this.showModal();
+        } else if (validLinkCount > 0) {
+            // すべて開いた後に選択状態をリセット
+            this.state.selectedItems.clear();
+            this.renderItems();
+            this.updateBatchActionButtons();
         }
+    },
+    
+    // ★ 新機能: すべて選択/選択解除
+    toggleSelectAll(select) {
+        const itemsListElement = document.getElementById('items-list');
+        if (!itemsListElement) return;
+
+        // 現在画面に表示されているアイテムのIDを取得
+        const visibleItemCards = itemsListElement.querySelectorAll('.item-card');
+        
+        visibleItemCards.forEach(card => {
+            const id = card.dataset.id; 
+            if (id) {
+                 if (select) {
+                    this.state.selectedItems.add(id);
+                } else {
+                    this.state.selectedItems.delete(id);
+                }
+            }
+        });
+
+        // チェックボックスの状態をDOMに反映（再描画）
+        this.renderItems();
+        this.updateBatchActionButtons();
     },
 
     updateTagStyles() {
@@ -756,11 +929,19 @@ const App = {
                                 <input id="search-input" type="text" placeholder="${dict.common.search}" value="${App.state.filters.search}" class="w-full bg-black/30 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all text-white">
                                 <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button id="view-grid" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10">
+                            
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <div id="batch-actions" class="flex-grow flex items-center gap-2 hidden transition-all">
+                                    <button id="select-all-btn" class="bg-black/30 text-gray-400 text-sm font-medium py-2 px-3 rounded-lg border border-white/10 hover:bg-white/20 transition-colors whitespace-nowrap">${dict.common.select_all || 'すべて選択'}</button>
+                                    <button id="deselect-all-btn" class="bg-black/30 text-gray-400 text-sm font-medium py-2 px-3 rounded-lg border border-white/10 hover:bg-white/20 transition-colors whitespace-nowrap">${dict.common.deselect_all || '選択解除'}</button>
+                                    <button id="batch-download-btn" class="bg-white hover:bg-gray-200 text-black font-medium py-2 px-3 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">選択アイテムをダウンロード (0)</button>
+                                    <button id="batch-detail-btn" class="bg-black/30 hover:bg-white/20 text-white font-medium py-2 px-3 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">選択アイテムの詳細を開く (0)</button>
+                                </div>
+
+                                <button id="view-grid" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10 flex-shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5" aria-hidden="true"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clip-rule="evenodd" /></svg>
                                 </button>
-                                <button id="view-list" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10">
+                                <button id="view-list" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10 flex-shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5" aria-hidden="true"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zM5 8a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm0 3a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
                                 </button>
                             </div>
@@ -812,24 +993,35 @@ const App = {
 
             const detailUrl = item.rel_link || '#'; 
             const downloadUrl = item.url || '#'; 
-
+            
+            // ★ 修正点: チェックボックスの状態を反映し、デザイン用クラスを追加
+            const isSelected = App.state.selectedItems.has(item.id);
+            const checkedAttr = isSelected ? 'checked' : '';
+            const selectionClass = isSelected ? 'selected-card' : '';
+            
+            // ★ 新機能: カードにdata-id属性とitem-cardクラスを追加
             if (viewMode === 'list') {
                 return `
-                    <div class="glassmorphism p-4 flex items-start space-x-4 hover:border-gray-500/50 transition-all border border-transparent">
-                        <div class="flex-grow">
-                            <h3 class="text-lg font-bold text-white mb-1">${itemName}</h3>
-                            <p class="text-sm text-gray-300 line-clamp-2">${itemDescription || dict.common.no_description}</p>
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                ${tagsHtml}
+                    <div class="glassmorphism item-card p-4 flex flex-col ${selectionClass}" data-id="${item.id}">
+                        <div class="flex items-center justify-between space-x-4 mb-2">
+                            <h3 class="text-lg font-bold text-white">${itemName}</h3>
+                            <div class="flex-shrink-0 relative w-5 h-5">
+                                <input type="checkbox" value="${item.id}" id="checkbox-${item.id}-list" ${checkedAttr} class="item-checkbox absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                                ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white/90 z-10 bg-blue-500 rounded-full" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>' : '<div class="w-5 h-5 border border-white/50 rounded-full bg-white/10"></div>'}
                             </div>
                         </div>
-                        <div class="flex-shrink-0 self-center flex space-x-2">
-                            <a href="${detailUrl}" data-url="${detailUrl}" class="detail-link bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
-                                ${dict.common.detail}
-                            </a>
-                            <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
-                                ${dict.common.download}
-                            </a>
+
+                        <p class="text-sm text-gray-300 line-clamp-2">${itemDescription || dict.common.no_description}</p>
+                        <div class="flex flex-wrap gap-2 mt-2 justify-between items-center">
+                            <div class="flex flex-wrap gap-2">${tagsHtml}</div>
+                            <div class="flex-shrink-0 flex space-x-2 mt-1">
+                                <a href="${detailUrl}" data-url="${detailUrl}" class="detail-link bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
+                                    ${dict.common.detail}
+                                </a>
+                                <a href="${downloadUrl}" data-url="${downloadUrl}" class="download-link bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap border border-white/20">
+                                    ${dict.common.download}
+                                </a>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -837,8 +1029,16 @@ const App = {
 
             // Grid View
             return `
-                <div class="glassmorphism p-6 flex flex-col hover:border-gray-500/50 transition-all border border-transparent">
-                    <h3 class="text-xl font-bold text-white leading-tight mb-2">${itemName}</h3>
+                <div class="glassmorphism item-card p-6 flex flex-col relative ${selectionClass}" data-id="${item.id}">
+                    
+                    <div class="flex items-center justify-between pt-0 pb-2">
+                        <h3 class="text-xl font-bold text-white leading-tight">${itemName}</h3>
+                        <div class="flex-shrink-0 relative w-5 h-5 -mt-1">
+                            <input type="checkbox" value="${item.id}" id="checkbox-${item.id}-grid" ${checkedAttr} class="item-checkbox absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                            ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white/90 z-10 bg-blue-500 rounded-full" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>' : '<div class="w-5 h-5 border border-white/50 rounded-full bg-white/10"></div>'}
+                        </div>
+                    </div>
+                    
                     <p class="text-gray-300 mb-4 flex-grow line-clamp-3">${itemDescription || dict.common.no_description}</p>
                     <div class="flex flex-wrap gap-2 mb-4">
                         ${tagsHtml}

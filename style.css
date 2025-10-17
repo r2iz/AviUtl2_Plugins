@@ -177,3 +177,30 @@ header {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* カード選択時のモダンなデザイン（青い枠線とシャドウ） */
+.selected-card {
+    /* 選択状態を示す青い枠線 */
+    border: 1px solid rgba(58, 143, 189, 0.8) !important; /* より鮮やかな青 */
+    /* 選択状態を示す光るシャドウ */
+    box-shadow: 0 0 15px rgba(58, 143, 189, 0.5), 0 0 5px rgba(58, 143, 189, 0.7);
+    /* 選択されたカードの背景をわずかに濃くする */
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    cursor: pointer; /* 選択可能なことを示すカーソル */
+}
+
+/* 通常のカードにクリック可能なカーソルを適用 */
+.glassmorphism.item-card {
+    cursor: pointer;
+    /* transition-allが適用されていることを確認 */
+}
+
+/* ホバー時のデザインを、選択状態と非選択状態で差別化 */
+.glassmorphism.item-card:hover:not(.selected-card) {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 選択されたカードはホバーしても選択状態を維持 */
+.selected-card:hover {
+    border-color: rgba(58, 143, 189, 1) !important;
+}
