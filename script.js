@@ -987,6 +987,10 @@ const App = {
             const lang = App.state.currentLang;
             const dict = App.i18n[lang];
 
+            // ★ 修正点1: authorフィールドの取得と'unknown'設定
+            const authorName = item.author || 'unknown'; 
+            const authorClass = 'text-gray-500 text-xs font-normal'; // 小さく、灰色にするクラス
+
             // 翻訳された名前と説明文を決定
             const itemName = (lang === 'en' && item.name_en) ? item.name_en : item.name;
             const itemDescription = (lang === 'en' && item.description_en) ? item.description_en : item.description;
@@ -1004,7 +1008,11 @@ const App = {
                 return `
                     <div class="glassmorphism item-card p-4 flex flex-col ${selectionClass}" data-id="${item.id}">
                         <div class="flex items-center justify-between space-x-4 mb-2">
-                            <h3 class="text-lg font-bold text-white">${itemName}</h3>
+                            <div class="flex items-baseline space-x-2 min-w-0">
+                                <h3 class="text-lg font-bold text-white truncate">${itemName}</h3>
+                                <p class="${authorClass} whitespace-nowrap">(${authorName})</p>
+                            </div>
+                            
                             <div class="flex-shrink-0 relative w-5 h-5">
                                 <input type="checkbox" value="${item.id}" id="checkbox-${item.id}-list" ${checkedAttr} class="item-checkbox absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
                                 ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white/90 z-10 bg-blue-500 rounded-full" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>' : '<div class="w-5 h-5 border border-white/50 rounded-full bg-white/10"></div>'}
@@ -1038,6 +1046,7 @@ const App = {
                             ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white/90 z-10 bg-blue-500 rounded-full" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>' : '<div class="w-5 h-5 border border-white/50 rounded-full bg-white/10"></div>'}
                         </div>
                     </div>
+                    <p class="${authorClass} -mt-2 mb-2">Author: ${authorName}</p>
                     
                     <p class="text-gray-300 mb-4 flex-grow line-clamp-3">${itemDescription || dict.common.no_description}</p>
                     <div class="flex flex-wrap gap-2 mb-4">
