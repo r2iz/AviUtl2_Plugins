@@ -16,18 +16,18 @@ const App = {
         },
         viewMode: 'grid', // 'grid' or 'list'
         tagMode: 'or', // 新しいタグ選択モード: 'or' or 'and'
-        currentLang: 'ja', // ★ 新しい状態: 現在の言語 ('ja' or 'en')
+        currentLang: 'ja', // 初期値はinit()で上書きされるので、一旦'ja'で残す
     },
     
     // ★ 翻訳データ
     i18n: {
         en: {
             nav: {
-                logo: 'AviUtl2 Hub', // ★ 追加
-                plugins: 'Plugins', // ★ 追加
-                scripts: 'Scripts', // ★ 追加
-                install: 'How to Install', // ★ 追加
-                info: 'Submit Info', // ★ 追加
+                logo: 'AviUtl2 Hub',
+                plugins: 'Plugins',
+                scripts: 'Scripts',
+                install: 'How to Install',
+                info: 'Submit Info',
             },
             hero: {
                 plugins_title: 'Plugins',
@@ -47,15 +47,15 @@ const App = {
                 no_items: 'No items found.',
                 reload: 'Reload Data',
                 no_info_title: 'No Information Available',
-                no_info_text: 'No detailed information provided.\nPlease check the author\'s site separately.', // ★ 改行コードを含む
+                no_info_text: 'No detailed information provided.\nPlease check the author\'s site separately.',
                 close: 'Close',
                 tag_filter: 'Tag Filter',
                 error_title: 'An Error Occurred',
                 error_prefix: 'Detail: ',
             },
             footer: {
-                description: 'This is an unofficial hub created by me to collect AviUtl2 information. For bugs or info, contact me on social media!', // ★ 以前の長い説明文
-                short_description: 'This is an unofficial site that compiles AviUtl2 scripts and plugins.\nIt is updated irregularly.', // ★ 新しい短い説明文
+                description: 'This is an unofficial hub created by me to collect AviUtl2 information. For bugs or info, contact me on social media!',
+                short_description: 'This is an unofficial site that compiles AviUtl2 scripts and plugins.\nIt is updated irregularly.',
                 copyright: '&copy; 2025 AviUtl2 Hub. All Rights Reserved.',
                 affiliation: 'This site is not affiliated with the official AviUtl developers.',
                 mobile_warning: 'This site is optimized for PC viewing. You can proceed, but are you sure you want to enter?',
@@ -65,11 +65,11 @@ const App = {
         },
         ja: {
             nav: {
-                logo: 'AviUtl2 Hub', // ★ 追加
-                plugins: 'プラグイン', // ★ 追加
-                scripts: 'スクリプト', // ★ 追加
-                install: '導入方法', // ★ 追加
-                info: '情報提供', // ★ 追加
+                logo: 'AviUtl2 Hub',
+                plugins: 'プラグイン',
+                scripts: 'スクリプト',
+                install: '導入方法',
+                info: '情報提供',
             },
             hero: {
                 plugins_title: 'プラグイン',
@@ -78,8 +78,6 @@ const App = {
                 scripts_subtitle: '便利なスクリプトを探そう',
                 install_title: '導入方法',
                 install_subtitle: 'プラグインとスクリプトの基本的な導入手順',
-                info_title: '情報提供',
-                info_subtitle: '新しいプラグインやスクリプトの情報を教えてください',
             },
             common: {
                 search: '検索...',
@@ -89,15 +87,15 @@ const App = {
                 no_items: 'アイテムが見つかりませんでした。',
                 reload: 'データを再読み込み',
                 no_info_title: '情報がありません',
-                no_info_text: '詳細情報が提供されていません。\n作者のサイトなどを別途ご確認ください。', // ★ 改行コードを含む
+                no_info_text: '詳細情報が提供されていません。\n作者のサイトなどを別途ご確認ください。',
                 close: '閉じる',
                 tag_filter: 'タグフィルタ',
                 error_title: 'エラーが発生しました',
                 error_prefix: '詳細: ',
             },
             footer: {
-                description: 'このサイトは、俺がAviUtl2の情報を集めるために作った非公式ハブだよ。不具合や情報提供はSNSまで！', // ★ 以前の長い説明文
-                short_description: 'AviUtl2のスクリプトとプラグインをまとめた非公式サイトです。\n不定期に更新しています。', // ★ 新しい短い説明文
+                description: 'このサイトは、俺がAviUtl2の情報を集めるために作った非公式ハブだよ。不具合や情報提供はSNSまで！',
+                short_description: 'AviUtl2のスクリプトとプラグインをまとめた非公式サイトです。\n不定期に更新しています。',
                 copyright: '&copy; 2025 AviUtl2 Hub. All Rights Reserved.',
                 affiliation: 'This site is not affiliated with the official AviUtl developers.',
                 mobile_warning: 'このサイトはPCでの表示に最適化されています。表示はできますが、本当に入りますか？',
@@ -112,12 +110,11 @@ const App = {
         app: document.getElementById('app'),
         loader: document.getElementById('loader'),
         navLinks: document.querySelectorAll('.nav-link'),
-        // ★ 言語切り替えボタンのグループとボタン要素を追加
         langToggleBtnGroup: null,
         langBtns: null, 
     },
 
-    // ★ アイテムから現在の言語のタグリストを取得するヘルパー
+    // アイテムから現在の言語のタグリストを取得するヘルパー
     getTranslatedTags(item) {
         const lang = this.state.currentLang;
         // enが選択されており、tags_enフィールドがあればそれを使用
@@ -128,7 +125,7 @@ const App = {
         return item.tags ? item.tags.split(',').map(tag => tag.trim()) : [];
     },
 
-    // ★ 現在の言語に対応するすべてのユニークな表示用タグを取得（タグフィルタ用）
+    // 現在の言語に対応するすべてのユニークな表示用タグを取得（タグフィルタ用）
     getAllDisplayTags() {
         const currentItems = this.state.currentPage === 'plugins' ? this.state.plugins : this.state.scripts;
         const displayTags = new Set();
@@ -143,20 +140,20 @@ const App = {
 
     // 初期化
     async init() {
-        // デフォルト言語の設定
-        this.state.currentLang = 'ja'; 
+        // ★ 1. 言語設定をローカルストレージから読み込み
+        const savedLang = localStorage.getItem('appLang');
+        this.state.currentLang = ['ja', 'en'].includes(savedLang) ? savedLang : 'ja'; 
         
-        // ★ 新しいDOM要素の取得
+        // 新しいDOM要素の取得
         this.elements.langToggleBtnGroup = document.getElementById('lang-toggle-btn-group');
         this.elements.langBtns = document.querySelectorAll('.lang-btn');
-        // ★ init時に全てのnavLinksを再取得し直す（ロゴリンクもdata-i18nを持つようにするため）
         this.elements.navLinks = document.querySelectorAll('.nav-link');
 
 
         // モバイルデバイスからのアクセスをチェック
         const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (isMobile) {
-            // ★ 翻訳キーを使用
+            // 翻訳キーを使用
             const confirmMessage = this.i18n[this.state.currentLang].footer.mobile_warning;
             if (!window.confirm(confirmMessage)) {
                 return; // 処理を中断
@@ -164,7 +161,9 @@ const App = {
         }
         
         this.config = await this.fetchConfig();
-        this.howToInstallMarkdown = await this.fetchMarkdown('how_to_install.md');
+        // ★ 3. 初期ロード時に現在の言語のMarkdownを読み込む
+        const installFile = this.state.currentLang === 'en' ? 'how_to_install_en.md' : 'how_to_install.md';
+        this.howToInstallMarkdown = await this.fetchMarkdown(installFile);
 
         this.elements.navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -176,7 +175,7 @@ const App = {
             });
         });
 
-        // ★ 言語切り替えボタンのイベントリスナー
+        // 言語切り替えボタンのイベントリスナー
         if (this.elements.langToggleBtnGroup) {
             this.elements.langBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -213,6 +212,7 @@ const App = {
         }
     },
 
+    // 言語に応じてMarkdownファイルを切り替える関数
     async fetchMarkdown(file) {
         try {
             const res = await fetch(file);
@@ -220,10 +220,8 @@ const App = {
             return await res.text();
         } catch (error) {
             console.error('Markdownファイルの読み込みに失敗しました:', error);
-            this.state.error = '導入方法のコンテンツが読み込めませんでした。';
-            this.state.isLoading = false;
-            this.render();
-            return '';
+            // エラーを格納せずに空文字を返す (Installページのエラーは別途ハンドリングされる)
+            return ''; 
         }
     },
 
@@ -325,40 +323,48 @@ const App = {
     },
 
     // ★ 言語切り替えロジック（ローディングを伴う）
-    switchLanguage(newLang) {
-        if (this.state.currentLang === newLang) return; // 変更がない場合は何もしない
+    async switchLanguage(newLang) {
+        if (this.state.currentLang === newLang) return; 
 
-        // 1. ローディング画面を表示
+        // 1. ローカルストレージに保存
+        localStorage.setItem('appLang', newLang); // ★ 追加
+
+        // 2. ローディング画面を表示
         this.state.isLoading = true;
         this.elements.loader.style.opacity = '1';
         this.elements.loader.style.pointerEvents = 'auto';
 
-        // 2. ページ全体をフェードアウト
+        // 3. ページ全体をフェードアウト
         const appElement = this.elements.app;
         appElement.style.transition = 'opacity 0.3s ease-out';
         appElement.style.opacity = '0';
 
-        // 3. アニメーションが終わるのを待ってから言語を切り替え、再描画
-        setTimeout(() => {
-            this.state.currentLang = newLang;
-            
-            // 翻訳とコンテンツの再描画を実行
-            // render()内で translatePage()が呼ばれ、その中で updateLangButtonStyles()も呼ばれる
-            this.render(); 
-            // フィルタリングも再実行 (translatePage -> renderItems)
+        // 4. アニメーションが終わるのを待ってから言語を切り替え、再描画
+        await new Promise(resolve => setTimeout(resolve, 300));
 
-            // 4. ローディング画面を隠し、コンテンツをフェードイン
-            this.state.isLoading = false;
-            this.elements.loader.style.opacity = '0';
-            this.elements.loader.style.pointerEvents = 'none';
+        this.state.currentLang = newLang;
 
-            appElement.style.transition = 'opacity 0.5s ease-out';
-            appElement.style.opacity = '1';
+        // 5. 言語に合わせて導入方法のMarkdownを再読み込み
+        if (newLang === 'en') {
+            this.howToInstallMarkdown = await this.fetchMarkdown('how_to_install_en.md');
+        } else {
+            this.howToInstallMarkdown = await this.fetchMarkdown('how_to_install.md');
+        }
             
-        }, 300); // フェードアウトの時間に合わせる
+        // 翻訳とコンテンツの再描画を実行
+        this.render(); 
+
+        // 6. ローディング画面を隠し、コンテンツをフェードイン
+        this.state.isLoading = false;
+        this.elements.loader.style.opacity = '0';
+        this.elements.loader.style.pointerEvents = 'none';
+
+        appElement.style.transition = 'opacity 0.5s ease-out';
+        appElement.style.opacity = '1';
+        
     },
 
-    // ★ 言語ボタンのスタイルを更新する関数
+    // 言語ボタンのスタイルを更新する関数
     updateLangButtonStyles() {
         const currentLang = this.state.currentLang;
         this.elements.langBtns.forEach(btn => {
@@ -431,7 +437,7 @@ const App = {
         });
 
         if (this.state.error) {
-            // ★ エラーメッセージの翻訳は行わず、取得したメッセージをそのまま表示
+            // エラーメッセージの翻訳は行わず、取得したメッセージをそのまま表示
             this.elements.app.innerHTML = this.templates.error(this.state.error);
             return;
         }
@@ -442,11 +448,11 @@ const App = {
 
         switch (this.state.currentPage) {
             case 'plugins':
-                // ★ 翻訳キーを使用
+                // 翻訳キーを使用
                 content = this.templates.itemsPage.call(this, dict.hero.plugins_title, dict.hero.plugins_subtitle, this.state.plugins);
                 break;
             case 'scripts':
-                // ★ 翻訳キーを使用
+                // 翻訳キーを使用
                 content = this.templates.itemsPage.call(this, dict.hero.scripts_title, dict.hero.scripts_subtitle, this.state.scripts);
                 break;
             case 'install':
@@ -466,11 +472,11 @@ const App = {
             this.updateTagModeButtons();
         }
         
-        // ★ ページ切り替え時に翻訳を実行 (ローディング後のフェードイン前に実行される)
+        // ページ切り替え時に翻訳を実行 (ローディング後のフェードイン前に実行される)
         this.translatePage();
     },
 
-    // ★ ページ全体を翻訳する関数
+    // ページ全体を翻訳する関数
     translatePage() {
         const lang = this.state.currentLang;
         const dict = this.i18n[lang];
@@ -481,7 +487,7 @@ const App = {
             const [section, subkey] = key.split('.');
             if (dict[section] && dict[section][subkey]) {
                 
-                // ★ common.no_info_text, footer.description, footer.short_description, common.no_info_title は改行処理が必要な場合があるのでinnerHTMLを使用
+                // common.no_info_text, footer.description, footer.short_description, common.no_info_title は改行処理が必要な場合があるのでinnerHTMLを使用
                 if (key === 'common.no_info_text' || key === 'footer.description' || key === 'footer.short_description' || key === 'common.no_info_title') {
                     // 改行コード \n を <br> に変換して適用
                     el.innerHTML = dict[section][subkey].replace(/\n/g, '<br>');
@@ -497,24 +503,18 @@ const App = {
             searchInput.placeholder = dict.common.search;
         }
         
-        // 3. モーダル内のタイトルを更新 (data-i18nで処理されるため、手動処理は削除)
-        // const modalTitle = document.querySelector('#custom-modal h3');
-        // if (modalTitle) modalTitle.textContent = dict.common.no_info_title;
-
-        // 4. ページのメインコンテンツが翻訳を反映するために再描画が必要な場合、ここで行う
+        // 3. ページのメインコンテンツが翻訳を反映するために再描画が必要な場合、ここで行う
         if (this.state.currentPage === 'plugins' || this.state.currentPage === 'scripts') {
-            // ★ タグフィルタリストを再描画するためにrenderItemsを呼び出す
+            // タグフィルタリストを再描画するためにrenderItemsを呼び出す
             this.renderItems(); 
             this.updateTagStyles(); // スタイルも再適用
         } else if (this.state.currentPage === 'info') {
              // infoPageの動的コンテンツを更新
-            const infoTextEl = document.querySelector('.info-page-text');
             const infoBtnEl = document.querySelector('.info-page-button');
-            // infoPageのp要素はtemplateでinnerHTMLが設定済みのため、ここでは不要
             if (infoBtnEl) infoBtnEl.textContent = dict.footer.info_form_button;
         }
 
-        // ★ 言語ボタンのスタイルを更新（選択状態を反映）
+        // 言語ボタンのスタイルを更新（選択状態を反映）
         this.updateLangButtonStyles();
     },
 
@@ -522,13 +522,13 @@ const App = {
     renderItems() {
         const currentItems = this.state.currentPage === 'plugins' ? this.state.plugins : this.state.scripts;
         const filteredItems = currentItems.filter(item => {
-            // ★ 検索対象を日本語/英語両方のフィールドにする場合は、ここでロジックを拡張
+            // 検索対象を日本語/英語両方のフィールドにする
             const searchMatch = (item.name?.toLowerCase() || '').includes(this.state.filters.search.toLowerCase()) ||
                                  (item.description?.toLowerCase() || '').includes(this.state.filters.search.toLowerCase()) ||
                                  (item.name_en?.toLowerCase() || '').includes(this.state.filters.search.toLowerCase()) || // 英語名も検索対象に追加
                                  (item.description_en?.toLowerCase() || '').includes(this.state.filters.search.toLowerCase()); // 英語説明も検索対象に追加
 
-            // ★ タグフィルタリングロジックを修正
+            // タグフィルタリングロジックを修正
             // 選択されたフィルタタグとアイテムのタグ（現在の言語）を比較
             const itemDisplayTags = new Set(this.getTranslatedTags(item)); // 現在の言語のタグリストを取得
 
@@ -537,10 +537,10 @@ const App = {
                 tagMatch = true;
             } else {
                 if (this.state.tagMode === 'or') {
-                    // モード1: 選択したフィルタタグが、アイテムの表示タグリストに一つでも含まれていればOK
+                    // モード1 (OR): 選択したフィルタタグが、アイテムの表示タグリストに一つでも含まれていればOK
                     tagMatch = [...this.state.filters.tags].some(selectedTag => itemDisplayTags.has(selectedTag));
                 } else {
-                    // モード2: 選択したフィルタタグが、アイテムの表示タグリストにすべて含まれていればNG
+                    // モード2 (AND): 選択したフィルタタグが、アイテムの表示タグリストにすべて含まれていればOK
                     tagMatch = [...this.state.filters.tags].every(selectedTag => itemDisplayTags.has(selectedTag));
                 }
             }
@@ -552,11 +552,11 @@ const App = {
         
         if (itemsListElement) {
             itemsListElement.className = this.state.viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'flex flex-col gap-4';
-            // ★ no_itemsを翻訳
+            // no_itemsを翻訳
             itemsListElement.innerHTML = filteredItems.length > 0 ? filteredItems.map(item => this.templates.itemCard(item, this.state.viewMode)).join('') : `<p class="text-gray-400 col-span-full text-center py-10">${this.i18n[this.state.currentLang].common.no_items}</p>`;
         }
 
-        // ★ タグフィルタリストの再描画 (言語切り替え対応)
+        // タグフィルタリストの再描画 (言語切り替え対応)
         if (tagFiltersElement) {
             const displayTags = this.getAllDisplayTags();
             tagFiltersElement.innerHTML = [...displayTags].sort().map(tag => {
@@ -745,8 +745,7 @@ const App = {
             const lang = App.state.currentLang;
             const dict = App.i18n[lang];
 
-            // ★ タグフィルタリストの生成はrenderItemsに移動。ここでは枠組みのみ
-            // renderItems内で、this.getAllDisplayTags()を使用してタグが生成される
+            // タグフィルタリストの生成はrenderItemsに移動。ここでは枠組みのみ
 
             return `
                 ${App.templates.hero(title, subtitle)}
@@ -755,14 +754,14 @@ const App = {
                         <div class="glassmorphism p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-24 z-10">
                             <div class="relative w-full sm:w-auto flex-grow">
                                 <input id="search-input" type="text" placeholder="${dict.common.search}" value="${App.state.filters.search}" class="w-full bg-black/30 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all text-white">
-                                <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
+                                <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button id="view-grid" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clip-rule="evenodd" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5" aria-hidden="true"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clip-rule="evenodd" /></svg>
                                 </button>
                                 <button id="view-list" class="p-2 rounded-lg transition-colors hover:bg-white/10 border border-white/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zM5 8a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm0 3a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5" aria-hidden="true"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zM5 8a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm0 3a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
                                 </button>
                             </div>
                             </div>
@@ -771,7 +770,7 @@ const App = {
                         
                         <div class="mt-8 text-center">
                             <button id="reload-button" class="bg-white/10 text-gray-300 font-semibold py-2 px-6 rounded-lg border border-white/10 hover:bg-white/20 transition-colors flex items-center mx-auto">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                                 </svg>
                                 ${dict.common.reload}
@@ -797,9 +796,8 @@ const App = {
                 </div>
             `;
         },
-        // itemCardからアイコンと詳細情報なしのロジックを削除
         itemCard(item, viewMode) {
-            // ★ getTranslatedTagsヘルパーを使用してタグを取得
+            // getTranslatedTagsヘルパーを使用してタグを取得
             const translatedTags = App.getTranslatedTags(item);
             const tagsHtml = translatedTags
                 .map(tag => `<span class="text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300">${tag}</span>`)
@@ -808,8 +806,7 @@ const App = {
             const lang = App.state.currentLang;
             const dict = App.i18n[lang];
 
-            // ★ 翻訳された名前と説明文を決定
-            // item.name_en や item.description_en フィールドが存在することを期待します。
+            // 翻訳された名前と説明文を決定
             const itemName = (lang === 'en' && item.name_en) ? item.name_en : item.name;
             const itemDescription = (lang === 'en' && item.description_en) ? item.description_en : item.description;
 
@@ -865,7 +862,7 @@ const App = {
                 ${App.templates.hero(dict.hero.install_title, dict.hero.install_subtitle)}\
                 <div class="glassmorphism p-6 sm:p-10 max-w-4xl mx-auto">
                     <div class="markdown-body">
-                        ${marked.parse(App.howToInstallMarkdown)}
+                        ${marked.parse(App.howToInstallMarkdown || dict.common.error_prefix + 'Markdownファイルの読み込みに失敗しました。')}
                     </div>
                 </div>
             `;
